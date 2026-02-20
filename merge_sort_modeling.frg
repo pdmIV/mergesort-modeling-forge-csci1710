@@ -22,6 +22,13 @@ pred sorted[a: IntArray] {
     a.elements[i] >= a.elements[subtract[i, 1]]
 }
 
+pred permutation[a, b: IntArray] {
+  all i: Int | (0 <= i and i <= a.lastIndex) implies
+    some j: Int | (0 <= j and j <= b.lastIndex) and (a.elements[i] = b.elements[j])
+  all j: Int | (0 <= j and j <= b.lastIndex) implies
+    some i: Int | (0 <= i and i <= a.lastIndex) and (a.elements[i] = b.elements[j])
+}
+
 //sig MergeState {
     //arr: one IntArray // should become more sorted over time (assume ascending order is sorted)
 //} {
