@@ -1,20 +1,17 @@
 #lang forge/froglet
 
 sig State {}
-one sig Transition {
-  firstState: one State,
-  nextState: pfunc State -> State
-}
 
 sig IntNode {
     value: one Int,
     next: lone IntNode
 }
+
 sig LinkedList {
     head: one IntNode,
-    currhead: pfunc State -> IntNode
+    firstState: one State,
+    nextState: pfunc State -> State
 }
-
 
 pred wellformed {
   // acyclic
@@ -29,6 +26,8 @@ pred sorted {
     some n.next implies n.value <= n.next.value
 }
 
+
+// TODO: Refactor this
 pred permutation[a, b: IntArray] {
   all i: Int | (0 <= i and i <= a.lastIndex) implies
     some j: Int | (0 <= j and j <= b.lastIndex) and (a.elements[i] = b.elements[j])
