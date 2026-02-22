@@ -17,7 +17,7 @@ sig LinkedList {
 
 pred wellformed {
   // acyclic
-  all i: IntNode, s: State| i.currNext = i.next[s]
+  all i: IntNode, s: State | i.currNext = i.next[s]
   all s: State, n: IntNode | not reachable[n, n, currNext]
   // head is not reachable from any node
   all l: LinkedList, n: IntNode | n != l.head implies not reachable[l.head, n, currNext]
@@ -25,10 +25,10 @@ pred wellformed {
   all l: LinkedList, n: IntNode | n != l.head implies reachable[n, l.head, currNext]
 }
 
-// pred sorted {
-//   all n: IntNode |
-//     some n.next implies n.value <= n.next.value
-// }
+pred sorted {
+  all n: IntNode |
+    some n.currNext implies n.value <= n.currNext.value
+}
 
 
 // TODO: Refactor this
@@ -41,6 +41,6 @@ pred wellformed {
 
 
 pred someList {
-    some l: LinkedList | wellformed
+    some l: LinkedList | wellformed and sorted
 }
 run someList for 5 Int, exactly 1 LinkedList, exactly 5 IntNode
