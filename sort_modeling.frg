@@ -1,25 +1,24 @@
 #lang forge/froglet
 
-sig IntArray {
-    elements: pfunc Int -> Int,
-    lastIndex: one Int
+sig IntNode {
+    value: one Int,
+    next: lone IntNode
+}
+sig LinkedList {
+    head: one IntNode
 }
 
-pred validArray[a: IntArray] {
-  -- Domain is exactly { i | 0 <= i <= lastIndex } (or empty if lastIndex = -1)
-  all i: Int | (some a.elements[i]) <=> (0 <= i and i <= a.lastIndex)
-
-  -- lastIndex is either -1 or a nonnegative index
-  a.lastIndex = -1 or 0 <= a.lastIndex
+pred wellformed {
+  // acyclic
+  all n: IntNode | not reachable[n, n, next]
+  all l: LinkedList, some h, n: IntNode | h = l.head implies {
+    n != h and not reachable[h, n, next]
+  }
 }
 
-fun firstIndex[a: IntArray]: one Int {
-  a.lastIndex < 0 => -1 else 0
-}
-
-pred sorted[a: IntArray] {
-  all i: Int | (1 <= i and i <= a.lastIndex) implies
-    a.elements[i] >= a.elements[subtract[i, 1]]
+pred sorted {
+  all n: IntNode |
+    some n.next implies n.value <= n.next.value
 }
 
 pred permutation[a, b: IntArray] {
