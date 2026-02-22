@@ -1,12 +1,20 @@
 #lang forge/froglet
 
+sig State {}
+one sig Transition {
+  firstState: one State,
+  nextState: pfunc State -> State
+}
+
 sig IntNode {
     value: one Int,
     next: lone IntNode
 }
 sig LinkedList {
-    head: one IntNode
+    head: one IntNode,
+    currhead: pfunc State -> IntNode
 }
+
 
 pred wellformed {
   // acyclic
