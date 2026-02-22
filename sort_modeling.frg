@@ -27,20 +27,43 @@ pred wellformed {
 
 pred sorted {
   all n: IntNode |
-    some n.currNext implies n.value <= n.currNext.value
+    some n.currNext implies n.value < n.currNext.value
 }
 
-
-// TODO: Refactor this
-// pred permutation[a, b: IntArray] {
-//   all i: Int | (0 <= i and i <= a.lastIndex) implies
-//     some j: Int | (0 <= j and j <= b.lastIndex) and (a.elements[i] = b.elements[j])
-//   all j: Int | (0 <= j and j <= b.lastIndex) implies
-//     some i: Int | (0 <= i and i <= a.lastIndex) and (a.elements[i] = b.elements[j])
+// pred insertion {
+//   all l: LinkedList | {
+//     all n: IntNode | {
+//       some s: State | {
+//         reachable[n,l.head, currNext] implies {
+//           some m: IntNode | n.next[l.nextState[s]] = m or l.head = m
+//         }
+//       }
+//     } 
+//   }
+//   // if some state is reachable in the current time step from the head, then there exists some other node m in the state next and not equal to original elements
+//   // for argument m to add ----> reachable[n,l.head,currNext]       there must be some n    n.next[next_state] = m
 // }
 
+pred insertion {
+  all l: LinkedList | {
+    some n: IntNode | {
+      some s: State | {
+        no m: IntNode | n.next[s] = m implies {
+          n.next[l.nextState[s]] = m or l.head = m
+        }
+      }
+    } 
+  }
+  // if some state is reachable in the current time step from the head, then there exists some other node m in the state next and not equal to original elements
+  // for argument m to add ----> reachable[n,l.head,currNext]       there must be some n    n.next[next_state] = m
+}
+
+
+---------------------------------------------------------------
 
 pred someList {
-    some l: LinkedList | wellformed and sorted
+    some l: LinkedList | wellformed and sorted and insertion
 }
-run someList for 5 Int, exactly 1 LinkedList, exactly 5 IntNode
+run {
+  someList
+ } for 5 Int, exactly 1 LinkedList, exactly 5 IntNode, exactly 2 State
