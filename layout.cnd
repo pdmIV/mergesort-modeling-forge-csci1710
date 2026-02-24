@@ -1,9 +1,8 @@
 constraints:
-  - cyclic: {direction: clockwise, selector: currNext}
+  - cyclic: {direction: clockwise, selector: next}
 
 directives:
   - size: {width: 100, height: 100, selector: IntNode}
   - attribute: {field: value}
-  - attribute: {field: next}
   - projection: {sig: State}
   - flag: hideDisconnectedBuiltIns
