@@ -24,6 +24,38 @@ fun state_pair[s1,s2:State, l: LinkedList]: set (State -> State) {
   {s1,s2: State | l.nextState[s1] = s2}
 }
 
+fun edges[s: State]: set (IntNode -> IntNode) {
+  {i, j: IntNode | i.next[s] = j}
+}
+fun tail[l: LinkedList, s: State]: set IntNode {
+  {t: IntNode |
+    reachable[t, l.head, edges[s]] and no t.next[s]
+  }
+}
+pred hasUniqueTail[l: LinkedList, s: State] {
+  one tail[l, s]
+}
+
+pred sortedV2[l: LinkedList, s: State] {
+  all i1, i2: IntNode | {
+    (reachable[i1, l.head, edges[s]] and i1.next[s] = i2)
+      implies i1.value <= i2.value
+  }
+}
+
+pred wellformedV3 {
+  all l: LinkedList | {
+    sortedV2[l, l.firstState]
+    all s: State | {
+      // Acyclic
+      all n: IntNode | not reachable[n, n, edges[s]]
+
+      // Head is the root
+      all n: IntNode | n.next[s] != l.head
+    }
+  }
+}
+
 pred wellformed {
   
   all s, s2: State {
@@ -154,8 +186,11 @@ pred insertion {
 
 pred someList {
     // some l: LinkedList | wellformed and sorted and newInsertion
-    some l: LinkedList | wellformed //and newInsertion
+    //some l: LinkedList | wellformed //and newInsertion
 }
 run {
   someList
  } for 5 Int, exactly 1 LinkedList, exactly 3 IntNode, exactly 3 State
+
+
+ 
