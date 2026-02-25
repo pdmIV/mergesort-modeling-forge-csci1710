@@ -1,5 +1,5 @@
 constraints:
-  - cyclic: {direction: clockwise, selector: next}
+  - group: {directions: [b, e, l, o, w, right, below], selector: next, direction: horizontal}
 
 directives:
   - size: {width: 100, height: 100, selector: IntNode}
