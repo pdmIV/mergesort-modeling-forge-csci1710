@@ -33,11 +33,7 @@ pred wellformed {
     // acyclic
   
     all l: LinkedList, i1,i2: IntNode | {
-      // s != l.firstState implies {
-      //   l.nextState[s] != l.firstState
-      // }
-      // s != l.firstState implies {reachable[s,l.firstState,state_pair[s,s2,l]]}
-      // s = l.firstState implies {not reachable[s,l.firstState,state_pair[s,s2,l]]}
+      s != l.firstState implies {reachable[s,l.firstState,state_pair[s,s2,l]]}
 
       l.nextState[s] != l.firstState and l.nextState[s2] != l.firstState
       l.nextState[s] != l.nextState[s2] and l.nextState[s] != s
@@ -48,6 +44,7 @@ pred wellformed {
       // head is not reachable through any node
       // i1 != l.head implies not reachable[l.head, i1, next_pair[i1, i2, l.firstState]]
       i1 != l.head implies not reachable[l.head, i1, next_pair[i1, i2, s]]
+      i2 = i1.next[s] implies {no i3: IntNode | {i3 != i1 and i2 = i3.next[s]}}
 
 
       // all nodes are reachable from head
@@ -55,7 +52,7 @@ pred wellformed {
 
       i1 != l.head and s != l.firstState implies reachable[i1,l.head,next_pair[i1,i2, s]]
 
-      s = l.firstState implies {one i : IntNode | not reachable[i,l.head,edges[s]]}
+      s = l.firstState implies {one i : IntNode | not reachable[i,l.head,edges[s]] and i!= l.head}
     }
   }
 }
@@ -78,7 +75,7 @@ pred newInsertion {
   all l: LinkedList | {
     some i: IntNode | {
       one i2: IntNode | {
-        i2 != l.head
+        // i2 != l.head
         not reachable[i2,l.head,edges[l.firstState]]
         i2 != i implies reachable[i,l.head,edges[l.firstState]]
 
