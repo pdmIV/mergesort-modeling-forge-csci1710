@@ -28,20 +28,6 @@ fun edges[s: State]: set (IntNode -> IntNode) {
   {i, j: IntNode | i.next[s] = j}
 }
 
-pred wellformedV3 {
-  all l: LinkedList | {
-    sortedV2[l, l.firstState]
-    all s: State | {
-      hasUniqueTail[l, s]
-      // Acyclic
-      all n: IntNode | not reachable[n, n, edges[s]]
-
-      // Head is the root
-      all n: IntNode | n.next[s] != l.head
-    }
-  }
-}
-
 pred wellformed {
   
   all disj s, s2: State {
@@ -115,7 +101,7 @@ pred someList {
 }
 run {
   someList
- } for exactly 1 LinkedList, exactly 3 IntNode, exactly 3 State
+ } for exactly 1 LinkedList, exactly 5 IntNode, exactly 3 State
 
 
  
