@@ -29,7 +29,6 @@ fun edges[s: State]: set (IntNode -> IntNode) {
 }
 
 pred wellformed {
-  
   all disj s, s2: State {
     // acyclic
   
@@ -55,6 +54,8 @@ pred wellformed {
       // i1 != l.head implies reachable[i1,l.head,next_pair[i1,i2, l.firstState]]
 
       i1 != l.head and s != l.firstState implies reachable[i1,l.head,next_pair[i1,i2, s]]
+
+      s = l.firstState implies {one i : IntNode | not reachable[i,l.head,edges[s]]}
     }
   }
 }
@@ -75,20 +76,21 @@ pred newInsertion {
   // Since that becomes the tail, there is no next for the newNode at s'
   // For all nodes minus the tail and the newNode, the next field in s' is the same as in s
   all l: LinkedList | {
-    some s: State | {
-      some i: IntNode | {
-        one i2: IntNode | {
-          i2 != i implies reachable[i,l.head,edges[l.firstState]]
-          s = l.firstState
-          no i.next[s] 
-          i.next[l.nextState[s]] = i2
-          no i2.next[l.nextState[s]]
-          no i2.next[s]
-          not reachable[i2,l.head,edges[s]]
-          reachable[i2,l.head,edges[l.nextState[s]]]
-        }
+    some i: IntNode | {
+      one i2: IntNode | {
+        i2 != l.head
+        not reachable[i2,l.head,edges[l.firstState]]
+        i2 != i implies reachable[i,l.head,edges[l.firstState]]
+
+        // no i.next[l.firstState] 
+        // i.next[l.nextState[l.firstState]] = i2
+        // no i2.next[l.nextState[l.firstState]]
+        // no i2.next[l.firstState]
+        
+        // reachable[i2,l.head,edges[l.nextState[l.firstState]]]
       }
     }
+    
   }
 }
 
