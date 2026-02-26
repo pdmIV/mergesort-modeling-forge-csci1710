@@ -31,74 +31,6 @@ pred distinctValues { // for visual clarity and to make the problem more interes
   all disj a, b: IntNode | a.value != b.value
 }
 
-// Idea
-fun succ[s: State]: lone State { LinkedList.nextState[s] }
-
-fun headAt[s: State]: lone IntNode { LinkedList.head[s] }
-
-fun insertedNode: lone IntNode {
-  let s0 = LinkedList.firstState |
-  let s1 = succ[s0] |
-    { n: IntNode |
-        some s1 and
-        not (headAt[s0] != none or reachable[n, headAt[s0], edges[s0]]) and
-        (headAt[s1] != none or reachable[n, headAt[s1], edges[s1]])
-    }
-}
-
-pred bubbleInsertedOneStep[s: State] {
-  let s2 = succ[s] | {
-    some s2
-    let x = insertedNode | {
-        some x and (headAt[s] != none or reachable[x, headAt[s], edges[s]])
-
-        // find predecessor p of x in s (p.next[s] = x)
-        one p: IntNode | p.next[s] = x and {
-
-          // only swap if out of order with predecessor
-          x.value < p.value implies {
-            // swap p and x
-            p.next[s2] = x.next[s]
-            x.next[s2] = p
-
-            // rewire predecessor-of-p (or head) to point to x
-            (headAt[s] = p) implies {
-              LinkedList.head[s2] = x
-            }
-            (headAt[s] != p) implies {
-              one pp: IntNode | pp.next[s] = p and pp.next[s2] = x
-              LinkedList.head[s2] = LinkedList.head[s]
-            }
-
-            // frame everything else
-            all n: IntNode - (p + x) | n.next[s2] = n.next[s]
-          }
-
-          // if not out-of-order, do nothing (stutter)
-          not (x.value < p.value) implies {
-            LinkedList.head[s2] = LinkedList.head[s]
-            all n: IntNode | n.next[s2] = n.next[s]
-          }
-        }
-      }
-  }
-}
-
-pred swappingForced {
-  let s0 = LinkedList.firstState | {
-    let s1 = succ[s0] | {
-      some s1
-      all s: State - (s0) | {
-        // only constrain transitions that exist along the linear trace
-        (some succ[s]) implies {
-          // start bubbling from s1 onward
-          (s = s0) implies true
-          (s != s0) implies bubbleInsertedOneStep[s]
-        }
-      }
-    }
-  }
-}
 
 --------------------------------------------------------------------------------------
 pred wellformed {
@@ -128,7 +60,7 @@ pred wellformed {
       // all nodes are reachable from head
       // i1 != l.head implies reachable[i1,l.head,next_pair[i1,i2, l.firstState]]
 
-      i1 != l.head[l.firstState] and s != l.firstState implies reachable[i1,l.head[l.firstState],next_pair[i1,i2, s]]
+      i1 != l.head[s] and s != l.firstState implies reachable[i1,l.head[s],next_pair[i1,i2, s]]
 
       s = l.firstState implies {one i : IntNode | not reachable[i,l.head[s],edges[s]] and i!= l.head[s]}
     }
@@ -142,7 +74,7 @@ pred sorted[s:State] {
       i1.next[s] = i2 implies i1.value < i2.value
 }
 
-pred newInsertionV2 {
+pred newInsertion {
   let s = LinkedList.firstState | {
     let nx = LinkedList.nextState[s] {
       some nx
@@ -156,6 +88,10 @@ pred newInsertionV2 {
           tail.next[nx] = newNode
           no newNode.next[nx]
 
+
+          //this line is just for testing purposes !!!!!!! please remember this lol :)
+          newNode.value < LinkedList.head[LinkedList.firstState].value
+
           all n: IntNode - tail - newNode | n.next[nx] = n.next[s]
         }
       }
@@ -163,98 +99,59 @@ pred newInsertionV2 {
   }
 }
 
-// pred swapping {
-//   // There may exist some integer which is out of order
-//   // That integer swaps left in the next state if the node to the left has a value greater than that node
-//   // Frame condition: The next field of all nodes unaffected by the swap are the same
-
-//   // state cannot be FirstState because first state has not inserted the out of order element and thus is sorted
-
-//   all s: State - (LinkedList.firstState + LinkedList.nextState[LinkedList.firstState]) | {  
-//     // i.next[s].value < i.value
-//     not sorted[s] implies {
-//       one i: IntNode | {
-//         i.next[s].value < i.value
-//         i.next[LinkedList.nextState[s]] = i.next[s].next[s]
-//         i.next[s].next[LinkedList.nextState[s]] = i
-
-//         // i is not the head
-//         some j:IntNode | j.next[s] = i and {
-//           j.next[LinkedList.nextState[s]] = i.next[s]
-
-//           //frame condition --> since there is a previous node, we also frame the head since this node cannot be the head
-//           LinkedList.head[s] = LinkedList.head[LinkedList.nextState[s]]
-//           all n: IntNode - (i + j + i.next[s]) | n.next[LinkedList.nextState[s]] = n.next[s]
-//         } else {
-//           // i is the new head of the list
 
 
-//           //need some sort of predicate to handle the case where the head has to swap with another node
-//           i = LinkedList.head[s] implies i.next[s] = LinkedList.head[LinkedList.nextState[s]]
-          
-//           // a -> c -> b
-//           // a -> b -> c
-//           //frame condition
-//           all n: IntNode - (i + i.next[s]) | n.next[LinkedList.nextState[s]] = n.next[s]
-//         }
-//       }
-//     } else {
-//       all i: IntNode,s:State | {
-//         reachable[i,LinkedList.head[s],edges[s]] implies i.next[s] = i.next[LinkedList.nextState[s]]
-//       }
-//     }
-//   }
-// }
-  
+// pred swappingGood {
+//   all s: State - LinkedList.firstState | {
+//     some LinkedList.nextState[s] implies {
+//       let ns = LinkedList.nextState[s] | {
 
+//         not sorted[s] implies {
 
+//           // There is exactly one adjacent out-of-order pair.
+//           // Since the list is fully sorted except for one inserted element,
+//           // this should always be satisfied with exactly one witness.
+//           one j: IntNode | {
+//             some j.next[s]                   // j must have a successor (guards tail node)
+//             j.value > j.next[s].value        // j and its successor are out of order
 
+//             let small = j.next[s] | {
 
+//               // ── Core swap: always applies regardless of position ──
+//               j.next[ns] = small.next[s]     // j skips over small to what small pointed to
+//               small.next[ns] = j             // small now points back to j
 
+//               // ── Head case: j IS the head ──
+//               j = LinkedList.head[s] implies {
+//                 LinkedList.head[ns] = small
+//                 // Frame: only j and small changed their next pointers
+//                 all n: IntNode - (j + small) | n.next[ns] = n.next[s]
+//               }
 
+//               // ── Non-head case: j has a predecessor ──
+//               j != LinkedList.head[s] implies {
+//                 LinkedList.head[ns] = LinkedList.head[s]   // head is unaffected
+//                 // prev is the unique node pointing to j
+//                 some prev: IntNode | {
+//                   prev.next[s] = j
+//                   prev.next[ns] = small
+//                   // Frame: j, small, AND prev are the only nodes whose next changed
+//                   all n: IntNode - (j + small + prev) | n.next[ns] = n.next[s]
+//                 }
+//               }
 
-// pred swappingV3 {
-//   all s: State - (LinkedList.firstState + LinkedList.nextState[LinkedList.firstState]) | {
-    
-//     not sorted[s] implies {
-//       some i: IntNode | {
-//         i.next[s].value < i.value // The out-of-order condition
-        
-//         // CASE 1: 'i' is the head of the list
-//         (LinkedList.head[s] = i) implies {
-//           // Update the head pointer to the new first node
-//           LinkedList.head[LinkedList.nextState[s]] = i.next[s]
-          
-//           // Perform the swap (A and B)
-//           i.next[LinkedList.nextState[s]] = i.next[s].next[s]
-//           i.next[s].next[LinkedList.nextState[s]] = i
-          
-//           // Frame the rest of the nodes
-//           all n: IntNode - (i + i.next[s]) | n.next[LinkedList.nextState[s]] = n.next[s]
-//         } 
-//         else {
-//         // CASE 2: 'i' is strictly inside the list (your original logic, corrected)
-//           some j: IntNode | {
-//             j.next[s] = i
-            
-//             // Frame the head since it's unaffected
-//             LinkedList.head[LinkedList.nextState[s]] = LinkedList.head[s]
-            
-//             // Perform the swap
-//             i.next[LinkedList.nextState[s]] = i.next[s].next[s]
-//             i.next[s].next[LinkedList.nextState[s]] = i
-//             j.next[LinkedList.nextState[s]] = i.next[s]
-            
-//             // Frame the rest of the nodes
-//             all n: IntNode - (i + j + i.next[s]) | n.next[LinkedList.nextState[s]] = n.next[s]
+//             }
 //           }
+
+//         } else {
+//           // Already sorted: hard freeze the entire state
+//           LinkedList.head[ns] = LinkedList.head[s]
+//           all n: IntNode | n.next[ns] = n.next[s]
 //         }
+
 //       }
-//     } else {
-//       // IF SORTED: Frame the entire state so it doesn't scramble
-//       LinkedList.head[LinkedList.nextState[s]] = LinkedList.head[s]
-//       all n: IntNode | n.next[LinkedList.nextState[s]] = n.next[s]
 //     }
+      
 //   }
 // }
 
@@ -264,52 +161,66 @@ pred newInsertionV2 {
 
 
 
-
-
-
-pred swappingV2 {
+pred swapping {
   // There may exist some integer which is out of order
   // That integer swaps left in the next state if the node to the left has a value greater than that node
   // Frame condition: The next field of all nodes unaffected by the swap are the same
 
   // state cannot be FirstState because first state has not inserted the out of order element and thus is sorted
 
-  all s: State - LinkedList.firstState | {  // this could be unsat because saying that no state can be the first state????? or maybe not    
-    // i.next[s].value < i.value
-    not sorted[s] implies {
-      let nx = LinkedList.nextState[s] | {
-        some nx
-        some i: IntNode | {
-          let j = i.next[s] | {
-            some j and j.value < i.value
+  all s: State - (LinkedList.firstState) | {  
+    some LinkedList.nextState[s] implies {
+      // i.next[s].value < i.value
+      not sorted[s] implies {
+        one i: IntNode | {
+          some i.next[s]
+          i.next[s].value < i.value
+          i.next[LinkedList.nextState[s]] = i.next[s].next[s]
+          i.next[s].next[LinkedList.nextState[s]] = i
 
-            i.next[nx] = j.next[s]
-            j.next[nx] = i
+          i = LinkedList.head[s] implies {
+            //need some sort of predicate to handle the case where the head has to swap with another node
+            i.next[s] = LinkedList.head[LinkedList.nextState[s]]
+            
             // a -> c -> b
             // a -> b -> c
             //frame condition
-            all n: IntNode - (i + j) | n.next[nx] = n.next[s]
-          }
+            all n: IntNode - (i + i.next[s]) | n.next[LinkedList.nextState[s]] = n.next[s]
+            // sorted[LinkedList.nextState[s]]
+
+          } else { // this is okay for now ?
+            one j: IntNode | {
+              j.next[s] = i
+              j.next[LinkedList.nextState[s]] = i.next[s]
+
+              //frame condition --> since there is a previous node, we also frame the head since this node cannot be the head
+              LinkedList.head[s] = LinkedList.head[LinkedList.nextState[s]]
+              all n: IntNode - (i + j + i.next[s]) | n.next[LinkedList.nextState[s]] = n.next[s]
+              // all n: IntNode - (i+j) | n.next[s].value > n.value
+            }
+          } 
         }
+
+
+      } else {
+        LinkedList.head[LinkedList.nextState[s]] = LinkedList.head[s]
+        all i: IntNode | i.next[LinkedList.nextState[s]] = i.next[s]
+        
       }
     }
-    // if the next node has a smaller value then do the following:
 
-    //next node after i in the next state is the next node of teh
-    //swapping nexts with smaller value node in order to switch their position in the list
   }
 }
-
 
 
 ---------------------------------------------------------------
 
 pred someList {
-    // some l: LinkedList | wellformed and newInsertionV2 and swapping
+    some l: LinkedList | wellformed and newInsertion and swapping
     // some l: LinkedList | wellformed and newInsertionV2 //and swappingV3
-    wellformed
-    newInsertionV2
-    swappingForced
+    // wellformed
+    // newInsertionV2
+    // swappingForced
 }
 run {
   someList
