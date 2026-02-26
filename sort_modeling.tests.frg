@@ -32,7 +32,6 @@ test suite for sorted {
 
     `a.next = `s1 -> `b
     `b.next = `s1 -> `c
-    -- usually also bind `c.next` (e.g., no `c.next[`s1]) depending on your model
   }
 
   example unsortedList is { not sorted[`s1 & State] } for {
