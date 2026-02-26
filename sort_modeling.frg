@@ -31,7 +31,7 @@ pred distinctValues { // for visual clarity and to make the problem more interes
   all disj a, b: IntNode | a.value != b.value
 }
 
-// Chat
+// Idea
 fun succ[s: State]: lone State { LinkedList.nextState[s] }
 
 fun headAt[s: State]: lone IntNode { LinkedList.head[s] }
