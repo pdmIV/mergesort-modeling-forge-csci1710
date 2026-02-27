@@ -56,7 +56,7 @@ fun totalNodes[s: State]: set IntNode {
 }
 
 test suite for newInsertion {
-
+  // insertion should increase len by 1
   example insertion_increases_length_by_one is {
     wellformed and newInsertion
 
@@ -85,6 +85,8 @@ test suite for newInsertion {
     `b.next = `s1 -> `c + `s2 -> `c
     `c.next = `s2 -> `d
   }
+
+  // insertion should only change the next pointer of the tail in state0
 }
 
 // test that swap works
