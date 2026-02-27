@@ -28,6 +28,7 @@ There are three primary predicates which control our model: wellformed, newInser
 
 Testing: What tests did you write to test your model itself? What tests did you write to verify properties about your domain area? Feel free to give a high-level overview of this.
 
-For the most part we just wrote positive and negative assertions for each predicate. We included extra tests for interesting properties, such as when a new node has a smaller value than the existing head and thus becomes the new head.
+For the most part we just wrote positive and negative assertions for each predicate. We included extra tests for interesting properties, such as when a new node has a smaller value than the existing head and thus becomes the new head.  For swapping, instead of writing lengthy examples, we determined what properties were necessary for swapping to be valid.  We deduced that for swapping it is enough to show that we start from a valid state, move to an unsorted state, end in a sorted state, and our frame conditions hold.  This makes sense inductively because if we start from a valid state and only make valid moves, then it must be the case that our swap is valid.
+
 
 Documentation: Make sure your model and test files are well-documented. This will help in understanding the structure and logic of your project.

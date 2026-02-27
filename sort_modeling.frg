@@ -34,6 +34,8 @@ pred distinctValues {
 
 pred wellformed {
   all s: State| {LinkedList.nextState[s] != s}
+  all i: IntNode - LinkedList.head[LinkedList.firstState] | {not reachable[LinkedList.head[LinkedList.firstState],i,edges[LinkedList.firstState]]}
+  all i: IntNode, s: State | {i.next[s] != i and i.next[s].next[s] != i and not reachable[i,i,edges[s]]}
   all disj s, s2: State {
     all l: LinkedList, i1,i2: IntNode | {
       distinctValues
@@ -43,6 +45,7 @@ pred wellformed {
       l.nextState[l.firstState] != none // just need to force a second state to exist
       l.nextState[s] != l.firstState and l.nextState[s2] != l.firstState
       l.nextState[s] != l.nextState[s2] and l.nextState[s] != s
+      
 
       sorted[l.firstState]
 
@@ -132,10 +135,8 @@ pred swapping {
       } else {
         LinkedList.head[LinkedList.nextState[s]] = LinkedList.head[s]
         all i: IntNode | i.next[LinkedList.nextState[s]] = i.next[s]
-        
       }
     }
-
   }
 }
 
